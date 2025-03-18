@@ -1,4 +1,4 @@
-# Example of usage
+# auth0-external-integrators-iac
 
 Get Auth2 Token
 ```bash
