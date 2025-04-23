@@ -31,6 +31,9 @@ variable "api_scopes" {
 }
 
 variable "client_accounts" {
-  description = "Mapping of customer client names to their AMS account IDs"
-  type        = map(string)
+  description = "Mapping of customer client names to their AMS account IDs and Org IDs"
+  type = map(object({
+    ams_account_id = string
+    org_id         = string
+  }))
 }

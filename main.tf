@@ -43,7 +43,8 @@ resource "auth0_client" "m2m_clients" {
 
   # Store the AMS account id in client metadata
   client_metadata = {
-    ams_account_id = each.value
+    ams_account_id = each.value.ams_account_id
+    org_id         = each.value.org_id
   }
 }
 
@@ -59,6 +60,9 @@ resource "auth0_client_grant" "m2m_client_grants" {
   # Grant both the common scopes and a dynamic permission based on the AMS account ID.
   scopes = concat(
     var.api_scopes,
-    [ format("ams:%s", each.value.client_metadata["ams_account_id"]) ]
+    [
+      format("ams:%s", each.value.client_metadata["ams_account_id"]),
+      format("org:%s", each.value.client_metadata["org_id"])
+    ]
   )
 }
