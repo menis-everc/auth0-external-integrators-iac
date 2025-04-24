@@ -1,3 +1,7 @@
+locals {
+  env = var.environments[terraform.workspace]
+}
+
 terraform {
   required_providers {
     auth0 = {
@@ -8,24 +12,24 @@ terraform {
 }
 
 provider "auth0" {
-  domain        = var.auth0_domain
-  client_id     = var.auth0_client_id
-  client_secret = var.auth0_client_secret
+  domain        = local.env.auth0_domain
+  client_id     = local.env.auth0_client_id
+  client_secret = local.env.auth0_client_secret
 }
 
 #############################
 # 1. Define the API (Resource Server)
 #############################
 resource "auth0_resource_server" "api" {
-  name       = var.api_name
-  identifier = var.api_identifier
+  name       = local.env.api_name
+  identifier = local.env.api_identifier
 }
 
 #############################
 # 1a. Create Common Scopes for the API as Separate Resources
 #############################
 resource "auth0_resource_server_scope" "scopes" {
-  for_each = toset(var.api_scopes)
+  for_each = toset(local.env.api_scopes)
 
   resource_server_identifier = auth0_resource_server.api.identifier
   scope                      = each.value
@@ -36,7 +40,7 @@ resource "auth0_resource_server_scope" "scopes" {
 # 2. Create External Customer M2M Clients
 #############################
 resource "auth0_client" "m2m_clients" {
-  for_each = var.client_accounts
+  for_each = local.env.client_accounts
 
   name     = each.key
   app_type = "non_interactive"
@@ -59,7 +63,7 @@ resource "auth0_client_grant" "m2m_client_grants" {
 
   # Grant both the common scopes and a dynamic permission based on the AMS account ID.
   scopes = concat(
-    var.api_scopes,
+    local.env.api_scopes,
     [
       format("ams:%s", each.value.client_metadata["ams_account_id"]),
       format("org:%s", each.value.client_metadata["org_id"])
